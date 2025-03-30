@@ -4,6 +4,7 @@ import { User } from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import crtpto from "crypto";
 import { sendVerificationCode } from "../utils/sendVerificationCode.js";
+import { sendToken } from "../utils/sendToken.js";
 
 export const register = catchAsyncErrors(async (req, res, next) => {
   try {
@@ -27,7 +28,7 @@ export const register = catchAsyncErrors(async (req, res, next) => {
         )
       );
     }
-    if (password.lenght < 8 || password.length > 16) {
+    if (password.length < 8 || password.length > 16) {
       return next(
         new ErrorHandler("Password must be between 8 and 16 characters.", 400)
       );
@@ -38,10 +39,102 @@ export const register = catchAsyncErrors(async (req, res, next) => {
       email,
       password: hashedPassword,
     });
-    const verificationCode = await User.generateVerificationCode();
+    const verificationCode = await user.generateVerificationCode();
     await user.save();
     sendVerificationCode(verificationCode, email, res);
   } catch (error) {
     next(error);
   }
+});
+
+export const verifyOTP = catchAsyncErrors(async (req, res, next) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return next(new ErrorHandler("Email or otp is missing", 400));
+  }
+
+  try {
+    const userAllEntries = await User.find({
+      email,
+      accountVerified: false,
+    }).sort({ createdAt: -1 });
+
+    if (userAllEntries.length === 0) {
+      // Fix: Correct check for empty result
+      return next(new ErrorHandler("User not found", 404));
+    }
+
+    let user = userAllEntries[0];
+
+    if (userAllEntries.length > 1) {
+      await User.deleteMany({
+        _id: { $ne: user._id },
+        email,
+        accountVerified: false,
+      });
+    }
+
+    if (user.verificationCode !== Number(otp)) {
+      return next(new ErrorHandler("Invalid OTP", 400));
+    }
+
+    const currentTime = Date.now();
+    const verificationCodeExpire = new Date(
+      user.verficationCodeExpire // Fix: Correct field name
+    ).getTime();
+
+    if (currentTime > verificationCodeExpire) {
+      return next(new ErrorHandler("OTP expired", 400));
+    }
+
+    user.accountVerified = true;
+    user.verificationCode = null;
+    user.verficationCodeExpire = null; // Fix: Correct field name
+
+    await user.save({ validateModifiedOnly: true });
+
+    sendToken(user, 200, "Account Verified", res);
+  } catch (error) {
+    console.error("Error in verifyOTP:", error); // Debugging
+    return next(new ErrorHandler("Internal server error", 500));
+  }
+});
+
+export const login = catchAsyncErrors(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(new ErrorHandler("Please enter all fields", 400));
+  }
+  const user = await User.findOne({ email, accountVerified: true }).select(
+    "+password"
+  );
+  if (!user) {
+    return next(new ErrorHandler("Invalid email or password", 400));
+  }
+  const isPasswordMatched = await bcrypt.compare(password, user.password);
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Invalid email or password", 400));
+  }
+  sendToken(user, 200, "User Login Success", res);
+});
+
+export const logout = catchAsyncErrors(async (req, res, next) => {
+  res
+    .status(200)
+    .cookie("token", "", {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+    })
+    .json({
+      success: true,
+      message: "Logged out successfully",
+    });
+});
+
+export const getUser = catchAsyncErrors(async (req, res, next) => {
+  const user = req.user;
+  res.status(200).json({
+    success: true,
+    user,
+  });
 });

@@ -1,5 +1,5 @@
-export function genenerateVerificationOtpEmailTemplate(otpCode){
-    return `<div
+export function genenerateVerificationOtpEmailTemplate(otpCode) {
+  return `<div
     style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color:#000; color: #fff;">
     <h2 style="color: #fff; text-align: center;">Verify Your Email Address</h2>
     <p style="font-size: 16px; color: #ccc;">Dear User,</p>
