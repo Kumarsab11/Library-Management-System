@@ -10,7 +10,10 @@ import usersIcon from "../assets/people.png";
 import { RiAdminFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, resetAuthSlice } from "../store/slices/authSlice.js";
-import { toggleAddNewAdminPopup } from "../store/slices/popupSlice.js";
+import {
+  toggleAddNewAdminPopup,
+  toggleSettingPopup,
+} from "../store/slices/popupSlice.js";
 import { toast } from "react-toastify";
 import AddNewAdmin from "../popups/AddNewAdmin";
 
@@ -62,30 +65,30 @@ const SideBar = ({ isSideBarOpen, setIsSideBarOpen, setSelectedComponent }) => {
             <img src={bookIcon} alt="icon" />
             <span>Books</span>
           </button>
-          {/* {isAuthenticated && user?.role === "Admin" && (
-            <> */}
-          <button
-            className="w-full py-2 font-medium bg-transparent rounded-md hover:cursor-pointer flex items-center space-x-2"
-            onClick={() => setSelectedComponent("Catalog")}
-          >
-            <img src={catalogIcon} alt="icon" />
-            <span>Catalog</span>
-          </button>
-          <button
-            className="w-full py-2 font-medium bg-transparent rounded-md hover:cursor-pointer flex items-center space-x-2"
-            onClick={() => setSelectedComponent("Users")}
-          >
-            <img src={usersIcon} alt="icon" />
-            <span>Users</span>
-          </button>
-          <button
-            className="w-full py-2 font-medium bg-transparent rounded-md hover:cursor-pointer flex items-center space-x-2"
-            onClick={() => dispatch(toggleAddNewAdminPopup())}
-          >
-            <RiAdminFill className="w-6 h-6" /> <span>Add New Admin</span>
-          </button>
-          {/* </>
-          )} */}
+          {isAuthenticated && user?.role === "Admin" && (
+            <>
+              <button
+                className="w-full py-2 font-medium bg-transparent rounded-md hover:cursor-pointer flex items-center space-x-2"
+                onClick={() => setSelectedComponent("Catalog")}
+              >
+                <img src={catalogIcon} alt="icon" />
+                <span>Catalog</span>
+              </button>
+              <button
+                className="w-full py-2 font-medium bg-transparent rounded-md hover:cursor-pointer flex items-center space-x-2"
+                onClick={() => setSelectedComponent("Users")}
+              >
+                <img src={usersIcon} alt="icon" />
+                <span>Users</span>
+              </button>
+              <button
+                className="w-full py-2 font-medium bg-transparent rounded-md hover:cursor-pointer flex items-center space-x-2"
+                onClick={() => dispatch(toggleAddNewAdminPopup())}
+              >
+                <RiAdminFill className="w-6 h-6" /> <span>Add New Admin</span>
+              </button>
+            </>
+          )}
           {isAuthenticated && user?.role === "User" && (
             <>
               <button
@@ -99,7 +102,7 @@ const SideBar = ({ isSideBarOpen, setIsSideBarOpen, setSelectedComponent }) => {
           )}
           <button
             className="w-full py-2 font-medium bg-transparent rounded-md hover:cursor-pointer flex items-center space-x-2"
-            //onClick={() => setSelectedComponent("My Borrowed Books")}
+            onClick={() => dispatch(toggleSettingPopup())}
           >
             <img src={settingIcon} alt="icon" />
             <span>Update Credentials</span>
