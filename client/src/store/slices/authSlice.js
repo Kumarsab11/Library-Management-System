@@ -201,7 +201,7 @@ export const login = (data) => async (dispatch) => {
     });
 };
 
-export const logout = (data) => async (dispatch) => {
+export const logout = () => async (dispatch) => {
   dispatch(authSlice.actions.logoutRequest());
   await axios
     .get("http://localhost:4000/api/v1/auth/logout", {
@@ -216,7 +216,7 @@ export const logout = (data) => async (dispatch) => {
     });
 };
 
-export const getUser = (data) => async (dispatch) => {
+export const getUser = () => async (dispatch) => {
   dispatch(authSlice.actions.getUserRequest());
   await axios
     .get("http://localhost:4000/api/v1/auth/me", {
